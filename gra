@@ -1,0 +1,460 @@
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.SwingUtilities;
+
+/**
+ * @author Sławek Kobyliński
+ * @author email kobylinski.s@gmail.com
+ * @wersion 12.2013
+ */
+
+public class Gra extends JFrame implements ActionListener {
+	final private int rozmiarTablic = 50;
+
+	private boolean[][] wartość_komórkiObecna = new boolean[rozmiarTablic][rozmiarTablic];
+	private JButton[][] komórka = new JButton[rozmiarTablic][rozmiarTablic];
+	JButton j_start;
+	JMenu oProgramie;
+	JPanel panel2;
+	JMenuItem niezmienne1, niezmienne2, oscylator1, oscylator2, statek1,
+			statek2, zasady, autor, obsługa, niezmienne3;
+	private static final long serialVersionUID = 1L;
+
+	public Gra() {
+
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				createGui();
+			}
+		});
+	}
+
+	protected void createGui() {
+		// *********************
+		// TODO Auto-generated method stub
+		setTitle("GRA W ŻYCIE");// tytuł okna
+		JPanel p_menu = new JPanel();
+		j_start = new JButton("Następny krok");
+		JMenu m_ustawienia_gotowe = new JMenu("Ustawienia");
+		oProgramie = new JMenu("O programie");
+		zasady = new JMenuItem("Zasady");
+		autor = new JMenuItem("Autor");
+		obsługa = new JMenuItem("Obsługa");
+
+		JMenuBar pasek_menu = new JMenuBar();
+		niezmienne1 = new JMenuItem("Matuzalem");
+		JMenu m_niezmienne = new JMenu("Niezmienne");
+		niezmienne2 = new JMenuItem("Diehard");
+		JMenu m_oscylator = new JMenu("Oscylator");
+		JMenu m_statki = new JMenu("Statki");
+		oscylator1 = new JMenuItem("Blinker");
+		oscylator2 = new JMenuItem("Żabka");
+		statek1 = new JMenuItem("Szybowiec");
+		statek2 = new JMenuItem("Dakota");
+		JSeparator separator1 = new JSeparator();
+		JSeparator separator2 = new JSeparator();
+		JSeparator separator3 = new JSeparator();
+
+		setJMenuBar(pasek_menu);
+		pasek_menu.add(separator2);
+		pasek_menu.add(m_ustawienia_gotowe);
+		m_niezmienne.add(niezmienne1);
+		m_niezmienne.add(niezmienne2);
+		m_statki.add(statek1);
+		m_statki.add(statek2);
+
+		pasek_menu.add(j_start);
+
+		pasek_menu.add(oProgramie);
+		pasek_menu.add(separator1);
+		oProgramie.add(zasady);
+		oProgramie.add(autor);
+		oProgramie.add(separator3);
+		oProgramie.add(obsługa);
+
+		m_ustawienia_gotowe.add(m_niezmienne);
+		m_ustawienia_gotowe.add(m_oscylator);
+		m_oscylator.add(oscylator2);
+		m_ustawienia_gotowe.add(m_statki);
+		m_oscylator.add(oscylator1);
+		p_menu.setLayout(new FlowLayout());
+		add(BorderLayout.NORTH, p_menu);
+		panel2 = new JPanel();
+
+		panel2.setLayout(new GridLayout(rozmiarTablic, rozmiarTablic));
+		add(panel2);// ustalenie rozkładu
+		plansza();
+		zasady.addActionListener(this);
+		obsługa.addActionListener(this);
+		autor.addActionListener(this);
+
+		niezmienne1.addActionListener(this);
+		niezmienne2.addActionListener(this);
+		statek1.addActionListener(this);
+		statek2.addActionListener(this);
+		oscylator1.addActionListener(this);
+		oscylator2.addActionListener(this);
+		oProgramie.addActionListener(this);
+		j_start.addActionListener(this);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setSize(1500, 1500);
+		setLocationRelativeTo(null);
+		setVisible(true);
+	}
+
+	public void plansza() {
+		for (int nr_wiersza = 0; nr_wiersza < rozmiarTablic; nr_wiersza++) {
+			for (int nr_kolumny = 0; nr_kolumny < rozmiarTablic; nr_kolumny++) {
+				komórka[nr_wiersza][nr_kolumny] = new JButton();
+				komórka[nr_wiersza][nr_kolumny].setBackground(wartośćNaKolor(
+						nr_wiersza, nr_kolumny));
+				komórka[nr_wiersza][nr_kolumny]
+						.addActionListener(new ActionListener() {
+							public void actionPerformed(ActionEvent arg0) {
+								JButton kom = (JButton) arg0.getSource();
+								if (kom.getBackground() == Color.ORANGE)
+									kom.setBackground(Color.DARK_GRAY);
+								else
+									kom.setBackground(Color.ORANGE);
+							}
+						});
+				panel2.add(komórka[nr_wiersza][nr_kolumny]);
+
+			}
+		}
+	}
+
+	private void przepiszWartosćZPlanszy() {
+		for (int nr_wiersza = 0; nr_wiersza < rozmiarTablic; nr_wiersza++) {
+			for (int nr_kolumny = 0; nr_kolumny < rozmiarTablic; nr_kolumny++) {
+
+				kolorNaWartość(nr_wiersza, nr_kolumny);
+				komórka[nr_wiersza][nr_kolumny].setBackground(wartośćNaKolor(
+						nr_wiersza, nr_kolumny));
+			}
+		}
+	}
+
+	private Color wartośćNaKolor(int nr_wiersza, int nr_kolumny) {
+		// TODO Auto-generated method stub
+		Color kolor;
+		if (!rozwoj(nr_wiersza, nr_kolumny))
+			kolor = Color.ORANGE;
+		else
+			kolor = Color.DARK_GRAY;
+		return kolor;
+	}
+
+	private boolean rozwoj(int wiersz, int kolumna) {
+		// TODO Auto-generated method stub
+		int sąsiedzi = liczbaSąsiadów(wiersz, kolumna);
+		if (wartość_komórkiObecna[wiersz][kolumna])// gdy żywa
+		{
+			if (sąsiedzi <= 1 || sąsiedzi > 3)
+				return false;// komórka martwa
+			if (sąsiedzi == 3 || sąsiedzi == 2)
+				return true;// komórka żywa
+		} else {
+			if (sąsiedzi == 3)
+				return true;// nawet jeżeli komórka jest martwa to w tym
+							// przypadku ożyje
+		}
+		return false;
+	}
+
+	private int liczbaSąsiadów(int wiersz, int kolumna) {
+		// TODO Auto-generated method stub
+		int sasiedzi = 0;
+		for (int i = wiersz - 1; i <= wiersz + 1; i++) {
+			if (i < 0 || i > rozmiarTablic - 1)
+				continue;
+			for (int j = kolumna - 1; j <= kolumna + 1; j++) {
+				if (j < 0 || j > rozmiarTablic - 1
+						|| (i == wiersz && j == kolumna))
+					continue;
+				if (wartość_komórkiObecna[i][j])
+					sasiedzi++;
+			}
+		}
+		return sasiedzi;
+	}
+
+	public void kolorNaWartość(int wiersz, int kolumna) {
+		if (komórka[wiersz][kolumna].getBackground() == Color.ORANGE)
+			wartość_komórkiObecna[wiersz][kolumna] = false;
+		else
+			wartość_komórkiObecna[wiersz][kolumna] = true;
+	}
+
+	private boolean ewolucja(int wiersz, int kolumna) {
+		int sasiedzi = liczbaSąsiadów(wiersz, kolumna);
+		if (wartość_komórkiObecna[wiersz][kolumna]) {
+			if (sasiedzi <= 1 || sasiedzi > 3)
+				return false;
+			if (sasiedzi == 3 || sasiedzi == 2)
+				return true;
+		} else {
+			if (sasiedzi == 3)
+				return true;
+		}
+		return false;
+	}
+
+	// *******************************************
+	public void nastepnePokolenie() {
+		boolean[][] wartość_komórkiPrzyszła = new boolean[rozmiarTablic][rozmiarTablic];
+		for (int i = 0; i < rozmiarTablic; i++)
+			for (int j = 0; j < rozmiarTablic; j++)
+
+				wartość_komórkiPrzyszła[i][j] = ewolucja(i, j);
+		wartość_komórkiObecna = wartość_komórkiPrzyszła;
+
+	}
+
+	// ***********************************************
+	public static void main(String[] args) {
+
+		new Gra();
+
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent zmień_stan) {
+		// TODO Auto-generated method stub
+		Object source = zmień_stan.getSource();
+
+		String text = zmień_stan.getActionCommand();
+		if (source == j_start) {
+
+			przepiszWartosćZPlanszy();
+			for (int i = 0; i < rozmiarTablic; i++) {
+				for (int j = 0; j < rozmiarTablic; j++) {
+					komórka[i][j].setBackground(wartośćNaKolor(i, j));
+
+				}
+			}
+			nastepnePokolenie();
+		}
+
+		if (source == oProgramie)
+			oProgramie();
+
+		else if (text.equals("Matuzalem")) {
+
+			ustawDlaMatuzalem();
+
+		}
+
+		else if (text.equals("Diehard")) {
+			ustawDlaDiehard();
+
+		} else if (text.equals("Zasady")) {
+			oProgramie();
+		} else if (text.equals("Obsługa")) {
+			obsługa();
+		} else if (text.equals("Autor"))
+			autor();
+		else if (text.equals("Blinker")) {
+			UstawDlaBlinker();
+
+		} else if (text.equals("Żabka")) {
+			UstawDlaZabka();
+
+		}
+
+		else if (text.equals("Szybowiec")) {
+			UstawDlaSzybowiec();
+
+		} else if (text.equals("Dakota")) {
+			UstawDlaDakota();
+		}
+	}
+
+	private void obsługa() {
+		// TODO Auto-generated method stub
+		String obsługa = "Po uruchomieniu programu należy wybrać stan początkowy. Komórki żółte są martwe, szare żywe \n"
+				+ "Za pomocą kliknięć na komórki można je ożywiać lub zabijać. Można też wybrać przykładowy stan początkowy \n"
+				+ "z menu \"Ustawienia\". Po wybraniu stanu początkowego uruchamiamy program klikając przycisk \"Następny krok\" \n";
+		JOptionPane.showMessageDialog(null, obsługa);
+
+	}
+
+	private void autor() {
+		// TODO Auto-generated method stub
+		String autor = "Sławomir Kobyliński\n"
+				+ "e-mail: kobylinski.s@gmail.com \n" + "Miłej zabawy ;)";
+		JOptionPane.showMessageDialog(null, autor);
+
+	}
+
+	private void UstawDlaDakota() {
+		// TODO Auto-generated method stub
+		początkowaWartośćPlanszy();
+
+		wartość_komórkiObecna[20][21] = true;
+		wartość_komórkiObecna[20][24] = true;
+		wartość_komórkiObecna[21][20] = true;
+		wartość_komórkiObecna[22][20] = true;
+		wartość_komórkiObecna[22][24] = true;
+		wartość_komórkiObecna[23][20] = true;
+		wartość_komórkiObecna[23][21] = true;
+		wartość_komórkiObecna[23][22] = true;
+		wartość_komórkiObecna[23][23] = true;
+
+		for (int nr_wiersza = 0; nr_wiersza < rozmiarTablic; nr_wiersza++) {
+			for (int nr_kolumny = 0; nr_kolumny < rozmiarTablic; nr_kolumny++) {
+
+				komórka[nr_wiersza][nr_kolumny].setBackground(wartośćNaKolor(
+						nr_wiersza, nr_kolumny));
+
+			}
+		}
+
+	}
+
+	private void UstawDlaSzybowiec() {
+		// TODO Auto-generated method stub
+		początkowaWartośćPlanszy();
+
+		wartość_komórkiObecna[20][20] = true;
+		wartość_komórkiObecna[21][20] = true;
+		wartość_komórkiObecna[22][21] = true;
+		wartość_komórkiObecna[20][21] = true;
+		wartość_komórkiObecna[20][22] = true;
+
+		for (int nr_wiersza = 0; nr_wiersza < rozmiarTablic; nr_wiersza++) {
+			for (int nr_kolumny = 0; nr_kolumny < rozmiarTablic; nr_kolumny++) {
+
+				komórka[nr_wiersza][nr_kolumny].setBackground(wartośćNaKolor(
+						nr_wiersza, nr_kolumny));
+			}
+		}
+
+	}
+
+	private void UstawDlaZabka() {
+		// TODO Auto-generated method stub
+		początkowaWartośćPlanszy();
+
+		wartość_komórkiObecna[20][21] = true;
+		wartość_komórkiObecna[21][21] = true;
+		wartość_komórkiObecna[22][21] = true;
+		wartość_komórkiObecna[21][22] = true;
+		wartość_komórkiObecna[22][22] = true;
+		wartość_komórkiObecna[23][22] = true;
+
+		for (int nr_wiersza = 0; nr_wiersza < rozmiarTablic; nr_wiersza++) {
+			for (int nr_kolumny = 0; nr_kolumny < rozmiarTablic; nr_kolumny++) {
+
+				komórka[nr_wiersza][nr_kolumny].setBackground(wartośćNaKolor(
+						nr_wiersza, nr_kolumny));
+
+			}
+		}
+
+	}
+
+	private void UstawDlaBlinker() {
+		// TODO Auto-generated method stub
+		początkowaWartośćPlanszy();
+
+		wartość_komórkiObecna[20][21] = true;
+		wartość_komórkiObecna[21][21] = true;
+		wartość_komórkiObecna[22][21] = true;
+
+		for (int nr_wiersza = 0; nr_wiersza < rozmiarTablic; nr_wiersza++) {
+			for (int nr_kolumny = 0; nr_kolumny < rozmiarTablic; nr_kolumny++) {
+
+				komórka[nr_wiersza][nr_kolumny].setBackground(wartośćNaKolor(
+						nr_wiersza, nr_kolumny));
+
+			}
+		}
+
+	}
+
+	private void początkowaWartośćPlanszy() {
+		// TODO Auto-generated method stub
+
+		for (int nr_wiersza = 0; nr_wiersza < rozmiarTablic; nr_wiersza++) {
+			for (int nr_kolumny = 0; nr_kolumny < rozmiarTablic; nr_kolumny++) {
+
+				komórka[nr_wiersza][nr_kolumny].setBackground(Color.ORANGE);
+				kolorNaWartość(nr_wiersza, nr_kolumny);
+			}
+		}
+
+	}
+
+	private void ustawDlaDiehard() {
+		// TODO Auto-generated method stub
+		początkowaWartośćPlanszy();
+		wartość_komórkiObecna[22][18] = true;
+		wartość_komórkiObecna[21][24] = true;
+		wartość_komórkiObecna[22][19] = true;
+		wartość_komórkiObecna[23][19] = true;
+		wartość_komórkiObecna[23][23] = true;
+		wartość_komórkiObecna[23][24] = true;
+		wartość_komórkiObecna[23][25] = true;
+
+		for (int nr_wiersza = 0; nr_wiersza < rozmiarTablic; nr_wiersza++) {
+			for (int nr_kolumny = 0; nr_kolumny < rozmiarTablic; nr_kolumny++) {
+
+				komórka[nr_wiersza][nr_kolumny].setBackground(wartośćNaKolor(
+						nr_wiersza, nr_kolumny));
+			}
+		}
+
+	}
+
+	private void ustawDlaMatuzalem() {
+		początkowaWartośćPlanszy();
+		// TODO Auto-generated method stub
+		wartość_komórkiObecna[21][21] = true;
+		wartość_komórkiObecna[21][22] = true;
+		wartość_komórkiObecna[21][23] = true;
+		wartość_komórkiObecna[21][25] = true;
+		wartość_komórkiObecna[22][21] = true;
+		wartość_komórkiObecna[23][23] = true;
+		wartość_komórkiObecna[23][25] = true;
+		wartość_komórkiObecna[24][22] = true;
+		wartość_komórkiObecna[24][23] = true;
+		wartość_komórkiObecna[24][25] = true;
+		wartość_komórkiObecna[25][21] = true;
+		wartość_komórkiObecna[25][23] = true;
+		wartość_komórkiObecna[25][25] = true;
+		for (int nr_wiersza = 0; nr_wiersza < rozmiarTablic; nr_wiersza++) {
+			for (int nr_kolumny = 0; nr_kolumny < rozmiarTablic; nr_kolumny++) {
+
+				komórka[nr_wiersza][nr_kolumny].setBackground(wartośćNaKolor(
+						nr_wiersza, nr_kolumny));
+			}
+		}
+
+	}
+
+	private void oProgramie() {
+		// TODO Auto-generated method stub
+		String o_Programie = "Reguły gry według Conwaya\n"
+				+ "- Martwa komórka, która ma dokładnie 3 żywych sąsiadów, staje się żywa w następnej jednostce czasu (rodzi się)\n"
+				+ "- Żywa komórka z 2 albo 3 żywymi sąsiadami pozostaje nadal żywa;\n"
+				+ "- Przy innej liczbie sąsiadów umiera (z \"samotności\" albo \"zatłoczenia\").\n ";
+
+		JOptionPane.showMessageDialog(null, o_Programie);
+
+	}
+
+}

@@ -1,0 +1,214 @@
+package logo;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.MediaTracker;
+import java.awt.Toolkit;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Scanner;
+import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+
+/*Napisać program, który rysuje figury: prostokąty i okręgi w oknie aplikacji.
+ *  Jako tło w oknie program wczytuje obrazek z podanego pliku graficznego. 
+ *  W przypadku nieudanego załadowania obrazka program wyświetla nazwę pliku graficznego w 
+ *  prawym-dolnym rogu okna. Natomiast parametry figur są wczytywane z pliku tekstowego. 
+ *  Losowo wybrane kolory dla figur mają być zachowane po każdorazowym odświeżeniu okna aplikacji.
+ */
+
+public class Zad2 {
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		new Zad2();
+	}
+
+	public Zad2() {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				createGUI();
+			}
+		});
+	}
+
+	protected void createGUI() {
+		JFrame jRamka = new JFrame();
+		jRamka.setTitle("Rysowanie figur wczytanych z pliku");
+		jRamka.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		jRamka.setLocation(50, 50);
+		jRamka.setResizable(false);
+		MyPanel panel = new MyPanel();
+		jRamka.setContentPane(panel);
+		jRamka.pack();
+		jRamka.setVisible(true);
+	}
+
+	class MyPanel extends JPanel {
+
+		final String adresTła = "P:/lan/Semestr_letni_2014_15/Zaoczne/GUI/Zadania/rysunki/PJATK_logo.gif";
+		final ArrayList<Color> listaKolorów = new ArrayList<>();
+		Image tło;
+		protected boolean czyZaładowane = false;
+
+		MyPanel() {
+			setPreferredSize(new Dimension(500, 500));
+			wczytajTło();
+			wczytajFigure();
+		}
+
+		private void wczytajTło() {
+			// TODO Auto-generated method stub
+			tło = Toolkit.getDefaultToolkit().getImage(adresTła);
+			MediaTracker mt = new MediaTracker(this);
+			mt.addImage(tło, 1);
+			try {
+				mt.waitForID(1);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			int szerokość = tło.getWidth(this), wysokość = tło.getHeight(this);
+			if (wysokość != -1 && wysokość != 0 && szerokość != -1
+					&& szerokość != 0) {
+				czyZaładowane = true;
+			}
+		}
+
+		public void paintComponent(Graphics g) {
+			super.paintComponent(g);
+			ustalTło(g);
+			rysujFigury(g, wczytajFigure());
+
+		}
+
+		private void rysujFigury(Graphics g, ArrayList<Figura> ListaFigur) {
+			Iterator it = listaKolorów.iterator();
+			for (Figura figura : ListaFigur) {
+				g.setColor((Color) it.next());
+				if (figura instanceof Kwadrat)	g.fillRect(figura.x, figura.y, figura.z,((Kwadrat) figura).t);
+				else
+					g.fillOval(figura.x, figura.y, figura.z, figura.z);
+			}
+		}
+
+		private void ustalTło(Graphics g) {
+			// TODO Auto-generated method stub
+			if (tło != null && czyZaładowane)
+				g.drawImage(tło, 0, 0, getWidth(), getHeight(), this);
+			else
+				g.drawString(this.adresTła, getWidth()
+						- g.getFontMetrics().stringWidth(this.adresTła) - 7,
+						getHeight() - 7);
+
+		}
+
+		public Color ustawKolor() {
+			final int kolor1 = (int) (Math.random() * 255), kolor2 = (int) (Math
+					.random() * 255), kolor3 = (int) (Math.random() * 255), przeźroczystość = (int) (Math
+					.random() * 20) + 150;
+			Color kolor = new Color(kolor1, kolor2, kolor3, przeźroczystość);
+			return kolor;
+		}
+		
+
+		private ArrayList<Figura> wczytajFigure() {
+			final String adresParametrów = "C:/Users/Sławek K/Dropbox/STUDIA INFORMATYCZNE/GUI ITN/GUI_itn/src/logo/ParametryFigur";
+			ArrayList<Figura> listaFigur = new ArrayList<>();
+			int x = 0, y = 0, r = 0, t = 0;
+			try {
+				Scanner wczytuj = new Scanner(new FileReader(adresParametrów));
+				String linia;
+				while (wczytuj.hasNextLine()) {
+					linia = wczytuj.nextLine();
+					if (sprawdźPoprawność(linia)) {
+						StringTokenizer tokenizer = new StringTokenizer(linia);
+						listaKolorów.add(ustawKolor());
+						while (tokenizer.hasMoreTokens()) {
+							x = Integer.parseInt(tokenizer.nextToken());
+							y = Integer.parseInt(tokenizer.nextToken());
+							r = Integer.parseInt(tokenizer.nextToken());// lub
+							if (!tokenizer.hasMoreTokens())
+								listaFigur.add(new Okrąg(x, y, r));
+							else {
+								t = Integer.parseInt(tokenizer.nextToken());
+								listaFigur.add(new Kwadrat(x, y, r, t));
+
+							}
+
+						}
+
+					}
+
+				}
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return listaFigur;
+		}
+
+		/* Metoda sprawdzająca czy wprowadzane dane odpowiadają potrzebom*/
+		private boolean sprawdźPoprawność(String liczba) {
+			// TODO Auto-generated method stub
+			String wzorzec = "((\\d*)\\s*){3,4}";/*dowolna liczba i biały
+													 znak które mogą
+													 wystąpić nie mniej niż 3
+													 razy i nie więcej niż 4*/
+													
+			Pattern patern = Pattern.compile(wzorzec);
+			Matcher matcher = patern.matcher(liczba);
+			boolean pasuje = matcher.matches();
+			return pasuje;
+		}
+
+	}
+
+}
+
+abstract class Figura {
+	protected int x, y, z;
+	public String toString() {
+		return "x" + x + "y" + y + "z" + z;
+	}
+}
+
+class Okrąg extends Figura {
+
+	Okrąg(int x, int y, int z) {
+		super.x = x;
+		super.y = y;
+		super.z = z;
+	}
+
+	public String toString() {
+		return super.toString();
+	}
+}
+
+class Kwadrat extends Figura {
+	int t;
+	Kwadrat(int x, int y, int z, int t) {
+		super.x = x;
+		super.y = y;
+		super.z = z;
+		this.t = t;
+
+	}
+
+	public String toString() {
+		return super.toString() + "t" + t;
+	}
+}
